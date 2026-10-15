@@ -1,0 +1,44 @@
+name: Daily commits
+
+on:
+  schedule:
+    # Once a day at 06:17 UTC (08:17 SAST). Off the hour, since GitHub
+    # delays or drops scheduled runs when :00 is busy.
+    - cron: "17 6 * * *"
+  workflow_dispatch: # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make commits
+        env:
+          # Must be an email verified on your GitHub account, or the
+          # commits won't count on your contribution graph.
+          COMMIT_NAME: ${{ secrets.COMMIT_NAME }}
+          COMMIT_EMAIL: ${{ secrets.COMMIT_EMAIL }}
+          MIN_COMMITS: 15
+          MAX_COMMITS: 20
+        run: |
+          if [ -z "$COMMIT_EMAIL" ] || [ -z "$COMMIT_NAME" ]; then
+            echo "Set the COMMIT_NAME and COMMIT_EMAIL repo secrets first." >&2
+            exit 1
+          fi
+          git config user.name  "$COMMIT_NAME"
+          git config user.email "$COMMIT_EMAIL"
+
+          count=$(( MIN_COMMITS + RANDOM % (MAX_COMMITS - MIN_COMMITS + 1) ))
+          mkdir -p logs
+          file="logs/$(date -u +%Y-%m).md"
+          for i in $(seq 1 "$count"); do
+            echo "- $(date -u +%Y-%m-%dT%H:%M:%SZ) entry $i/$count" >> "$file"
+            git add "$file"
+            git commit -q -m "Log entry $i/$count for $(date -u +%Y-%m-%d)"
+          done
+          git push
+          echo "Pushed $count commits."
