@@ -23,7 +23,7 @@ jobs:
           COMMIT_NAME: ${{ secrets.COMMIT_NAME }}
           COMMIT_EMAIL: ${{ secrets.COMMIT_EMAIL }}
           MIN_COMMITS: 15
-          MAX_COMMITS: 20
+          MAX_COMMITS: 35
         run: |
           if [ -z "$COMMIT_EMAIL" ] || [ -z "$COMMIT_NAME" ]; then
             echo "Set the COMMIT_NAME and COMMIT_EMAIL repo secrets first." >&2
